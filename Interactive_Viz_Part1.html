@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>MLB Hitters</title>
+<!-- 	<link rel="stylesheet" type="text/css" href="interViz.css">
+ -->	<script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.4/jquery.min.js"></script>
+	<script type="text/javascript" src="https://d3js.org/d3.v4.min.js"></script>
+</head>
+<style>
+	#title {
+		text-align: center;
+		font-size: 24px;
+	}
+
+	#title p {
+		margin: 0px;
+	}
+
+	h3 {
+		font-size: 40px;
+		margin: 0px;
+	}
+
+	#legend {
+		margin: 10px;
+		padding-top: 0px;
+	}
+
+	span {
+		border: 1px solid #000;
+		padding: 10px;
+		display: inline;
+	}
+
+	#redBox {
+		background-color: red;
+	}
+
+	#blueBox {
+		background-color: blue;
+		color: white;
+	}
+
+	svg {
+		margin: auto;
+		display: block;
+		padding: auto;
+	}
+
+	#StrikeZone, #SprayChart {
+		border-style: solid;
+		border-width: 2px;
+		border-color: black;
+	}
+
+	/*For Tabs*/
+	div .tab {
+	    overflow: hidden;
+	    border: 1px solid #ccc;
+	    background-color: #f1f1f1;
+	}
+
+	/* Style the links inside the tab */
+	div.tab a {
+	    float: left;
+	    display: block;
+	    color: black;
+	    text-align: center;
+	    padding: 10px 12px;
+	    text-decoration: none;
+	    transition: 0.3s;
+	    font-size: 17px;
+	    border: 1px solid #000;
+	}
+
+	/* Change background color of links on hover */
+	div.tab a:hover {
+	    background-color: #ddd;
+	}
+
+	/* Create an active/current tablink class */
+	div.tab a:focus, .active {
+	    background-color: #ccc;
+	}
+
+	/* Style the tab content */
+	.tabcontent {
+	    display: none;
+	    padding: 6px 12px;
+	    border: 1px solid #ccc;
+	    border-top: none;
+	}
+
+	h3 {
+		clear: left;
+		text-align: center;
+	}
+
+	.axis path,
+	.axis line {
+		fill: none;
+		stroke: #000;
+		shape-rendering: crispEdges;
+	}
+
+	.dot {
+		stroke: #000;
+	}
+
+	.tooltip {
+		position: absolute;
+		width: 200px;
+		height: 28px;
+		pointer-events: none;
+	}
+
+	.lowOpacity {
+		opacity: 0.05;
+	}
+
+	div.hoverOff {
+		opacity: 0;
+	}
+
+</style>
+
+<body>
+	<div id="title">
+		<p>Seattle Mariners Hitters</p>
+	</div>
+
+	<div class="tab">
+  		<a href="javascript:void(0)" id="defaultOpen" class="tablinks" onclick="openView(event, 'StrikeZone')">Strike Zone</a>
+  		<a href="javascript:void(0)" id="sprayTab" class="tablinks" onclick="openView(event, 'SprayChart')">Spray Chart</a>
+	</div>
+
+	<div id="StrikeZone" class="tabcontent">
+		<div id="main">
+			<h3>Strike Zone</h3>
+
+			<div id="querySection">
+				<h4>Dynamic Query</h4>
+
+				<select id="playerList">
+					<option value="" disabled selected>Select a Player</option>
+					<option value="Adam Lind">Adam Lind</option>
+					<option value="Ben Gamel">Ben Gamel</option>
+					<option value="Chris Iannetta">Chris Iannetta</option>
+					<option value="Dae-Ho Lee">Dae-Ho Lee</option>
+					<option value="Daniel Robertson">Daniel Robertson</option>
+					<option value="Guillermo Heredia">Guillermo Heredia</option>
+					<option value="Jesus Sucre">Jesus Sucre</option>
+					<option value="Ketel Marte">Ketel Marte</option>
+					<option value="Kyle Seager">Kyle Seager</option>
+					<option value="Leonys Martin">Leonys Martin</option>
+					<option value="Luis Sardinas">Luis Sardinas</option>
+					<option value="Mike Zunino">Mike Zunino</option>
+					<option value="Nelson Cruz">Nelson Cruz</option>
+					<option value="Norichika Aoki">Norichika Aoki</option>
+					<option value="Robinson Cano">Robinson Cano</option>
+					<option value="Seth Smith">Seth Smith</option>
+					<option value="Shawn O'Malley">Shawn O'Malley</option>
+					<option value="Stefen Romero">Stefen Romero</option>
+					<option value="Steve Clevenger">Steve Clevenger</option>
+					<option value="Wade Miley">Wade Miley</option>
+				</select>
+				
+				<select id="pitcherArm">
+					<option value="" disabled selected>Select Pitcher Arm</option>
+					<option value="L">Left-Handed</option>	
+					<option value="R">Right-Handed</option>	
+				</select>
+			</div>
+
+			<div id="legend">
+				<h4>Color Scale</h4>
+				<span id="redBox">Above Team Average</span>
+				<span id="whiteBox">At Team Average</span>
+				<span id="blueBox">Below Team Average</span>
+			</div>
+			<div id="description"></div>
+		</div>
+	</div>
+
+	<div id="SprayChart" class="tabcontent">
+		<div id="main2">
+			<h3>Spray Chart</h3>	
+			<p>Click on a point to show other hits from the same player.</p>
+		</div>
+  		
+	</div>
+</body>
+	<script src="interViz.js"></script>
+</html>
+
