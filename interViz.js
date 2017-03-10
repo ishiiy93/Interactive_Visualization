@@ -1,33 +1,9 @@
-// To get file started
-document.getElementById("defaultOpen").click();
-
-// To allow tab interaction
-function openView(evt, viewName) {
-
-    // Declare all variables
-    var i, tabcontent, tablinks;
-
-    // Get all elements with class="tabcontent" and hide them
-    tabcontent = document.getElementsByClassName("tabcontent");
-    for (i = 0; i < tabcontent.length; i++) {
-        tabcontent[i].style.display = "none";
-    }
-
-    // Get all elements with class="tablinks" and remove the class "active"
-    tablinks = document.getElementsByClassName("tablinks");
-    for (i = 0; i < tablinks.length; i++) {
-        tablinks[i].className = tablinks[i].className.replace(" active", "");
-    }
-
-    // Show the current tab, and add an "active" class to the link that opened the tab
-    document.getElementById(viewName).style.display = "block";
-    evt.currentTarget.className += " active";
-}
-
 // Global variables
 var players = new Array();
 var masterData;
 var gridZoneData;
+var selectedPlayerData = new Array();
+var leftOrRight = "";
 var zoneSummary = new Array();
 for (var i = 1; i <= 9; i++) {
 	zoneSummary.push({
@@ -60,14 +36,12 @@ d3.csv("mariners.csv", function(data) {
 	totalPitches = masterData.length;
 
 	loaded();
-	loaded3();
 });
 
 // Called after CSV is read in, and creats master data array of objects
 // to be used in Strike Zone view. Also creates individual selected player's
 // data.
 function loaded() {
-	var leftOrRight = "";
 	document.getElementById("pitcherArm").disabled = true;
 
 	// Create zoneSummary array to keep track of total zone count and its average
@@ -98,7 +72,7 @@ function loaded() {
 		leftOrRight = document.getElementById("pitcherArm").value;
 		filterType(document.getElementById("playerList").value);
 		loaded2();
-		// loaded3();
+		loaded3();
 	}
 
 	// Begin query process when user selects a player, 
@@ -122,11 +96,18 @@ function loaded() {
 
 		d3.select("#description")
 			.append("h2")
-			.text(function(d) { return (data + " performance against a " + 
-				leftOrRight + "HP") })
-			.style("text-align", "center")
+			.text(function(d) { 
+				if (leftOrRight == '') {
+					return (data + " performance against all pitchers")
+				} else {
+					return (data + " performance against a " + leftOrRight + "HP")
+				}})
 
 			for (var i = 0; i < masterData.length; i++) {
+				if (data == 'All') {
+					return zoneSummarize(masterData);
+				} 
+
 				if (masterData[i].player_name === data) {
 					playerData.push(masterData[i])
 				}
@@ -141,10 +122,17 @@ function loaded() {
 			zoneSummary[i].count = 0;
 			zoneSummary[i].average = 0;
 		}
+		selectedPlayerData = [];
 
 		// Count each zone appearance in masterData		
 		if (document.getElementById("pitcherArm").value == "") {
-			for (var i = 0; i < data.length; i++) {
+			for (var i = 0; i < totalPitches; i++) {
+				selectedPlayerData.push({
+					player: data[i].player_name,
+					events: data[i].events,
+					hc_x: data[i].hc_x,
+					hc_y: data[i].hc_y, 
+				})
 				for(var j = 0; j < zoneSummary.length; j++) {
 					if (masterData[i].zone == zoneSummary[j].zone) {
 						zoneSummary[j].count++;
@@ -152,7 +140,15 @@ function loaded() {
 				}
 			}
 		} else {
-			for (var i = 0; i < data.length; i++) {
+			for (var i = 0; i < totalPitches; i++) {
+				if (data[i].p_throws === leftOrRight) {
+					selectedPlayerData.push({
+						player: data[i].player_name,
+						events: data[i].events,
+						hc_x: data[i].hc_x,
+						hc_y: data[i].hc_y, 
+					})
+				}
 				for(var j = 0; j < zoneSummary.length; j++) {
  					if (masterData[i].zone == zoneSummary[j].zone 
 						&& masterData[i].p_throws === leftOrRight) {
@@ -161,6 +157,13 @@ function loaded() {
 				}
 			}
 		}
+
+		for (var i = 0; i <selectedPlayerData.length; i++) {
+			selectedPlayerData[i].hc_y = +selectedPlayerData[i].hc_y;
+			selectedPlayerData[i].hc_y = -1 * selectedPlayerData[i].hc_y;
+			selectedPlayerData[i].hc_x = +selectedPlayerData[i].hc_x;
+			selectedPlayerData[i].hc_x = -1 * selectedPlayerData[i].hc_x;
+		};
 
 		// Calculate average for each zone total
 		for (var i = 0; i < zoneSummary.length; i++) {
@@ -213,10 +216,27 @@ function loaded() {
 		d3.select("#gridSVG").remove();
 
 		var rect = grid.append("svg")
+			.data(masterData)
 			.attr("width", 305)
 			.attr("height", 305)
 			.attr("id", "gridSVG")
-			.data(masterData);
+
+
+		console.log(leftOrRight);
+		if (leftOrRight == 'L') { 
+			rect.append('image')
+				.attr('href', './left.png')
+				.attr('x', 350)
+				.attr('y', 0)
+				.attr('height', 250);
+		} else if (leftOrRight == 'R') {
+			rect.append('image')
+				.attr('href', './right.png')
+				.attr('x', -200)
+				.attr('y', 0)
+				.attr('height', 250);
+		}
+
 
 		var row = rect.selectAll(".row")
 			.data(gridData)
@@ -246,14 +266,14 @@ function loaded() {
 
 var hoveredPlayer = "";
 
-// Creates the 
+// Creates the spray chart
 function loaded3() {
 	var margin = {top: 20, right: 20, bottom: 30, left: 40},
 	    width = 600 - margin.left - margin.right,
 	    height = 600 - margin.top - margin.bottom;
 	// setup x 
 	var xValue = function(d) { return d.hc_x;}, // data -> value
-		player = function(d) { return d.player_name; },
+		player = function(d) { return d.player;},
 	    xScale = d3.scaleLinear().range([0, width]), // value -> display
 	    xMap = function(d) { return xScale(xValue(d));}, // data -> display
 	    xAxis = d3.axisBottom()
@@ -288,18 +308,17 @@ function loaded3() {
 		.attr("class", "tooltip")
 		.style("opacity", 0);
 
-	d3.csv("mariners.csv", function(error, data) {
-		// change string (from CSV) into number format
-		data.forEach(function(d) {
-			d.hc_y = +d.hc_y;
-			d.hc_y = -1 * d.hc_y;
-			d.hc_x = +d.hc_x;
-			d.hc_x = -1 * d.hc_x;
-		});
+	createDots(selectedPlayerData);
 
+	function createDots(data) {
 		// don't want dots overlapping axis, so add in buffer to data domain
 		xScale.domain([d3.min(data, xValue)-10, d3.max(data, xValue)+1]);
 		yScale.domain([d3.min(data, yValue)-10, d3.max(data, yValue)+10]);
+
+		svg.append("image")
+			.attr("href", "./field.png")
+			.attr("width", 540)
+			.attr("height", 595);
 
 		// x-axis
 		svg.append("g")
@@ -312,6 +331,7 @@ function loaded3() {
 				.attr("y", -6)
 				.style("text-anchor", "end")
 				.text("Calories");
+
 
 		// y-axis
 		svg.append("g")
@@ -327,7 +347,7 @@ function loaded3() {
 
 		// draw dots
 		svg.selectAll(".dot")
-			.data(data)
+			.data(selectedPlayerData)
 			.enter().append("circle")
 			.attr("class", "dot")
 			.attr("r", 3.5)
@@ -342,12 +362,12 @@ function loaded3() {
 				tooltip.html(d.events + "<br/> (" + player(d) + ")")
 					.style("left", (d3.event.pageX + 15) + "px")
 					.style("top", (d3.event.pageY - 28) + "px");
-
 				hoveredPlayer = player(d);
-				relatedDots(hoveredPlayer, tooltip, svg);
-				})
+				setTimeout(function() {
+					relatedDots(hoveredPlayer, tooltip, svg);
+				}, 750);
+			})
 			.on("mouseout", function(d) {
-				console.log("first function, mouse off");
 				tooltip.transition()
 					.duration(200)
 					.style("opacity", 0);
@@ -374,14 +394,12 @@ function loaded3() {
 			.attr("dy", ".35em")
 			.style("text-anchor", "end")
 			.text(function(d) { return d;});
-	});
+	};
 }
 
 // Very similar function to loaded(), however includes conditional class assignment
 // while creating the circles
 function relatedDots(hoveredPlayer, tooltip, svg) {
-	console.log("in");
-
 	var margin = {top: 20, right: 20, bottom: 30, left: 40},
 	    width = 600 - margin.left - margin.right,
 	    height = 600 - margin.top - margin.bottom;
@@ -412,15 +430,9 @@ function relatedDots(hoveredPlayer, tooltip, svg) {
     	.append("g")
 
     d3.selectAll(".dot").remove();
+    recreateDots(selectedPlayerData);
 
-	d3.csv("mariners.csv", function(error, data) {
-		data.forEach(function(d) {
-			d.hc_y = +d.hc_y;
-			d.hc_y = -1 * d.hc_y;
-			d.hc_x = +d.hc_x;
-			d.hc_x = -1 * d.hc_x;
-		});
-
+	function recreateDots(data) {
 		// don't want dots overlapping axis, so add in buffer to data domain
 		xScale.domain([d3.min(data, xValue)-10, d3.max(data, xValue)+1]);
 		yScale.domain([d3.min(data, yValue)-10, d3.max(data, yValue)+10]);
@@ -432,7 +444,7 @@ function relatedDots(hoveredPlayer, tooltip, svg) {
 			.data(data)
 			.enter().append("circle")
 			.attr("class", function(d) {
-				if (player(d) != hoveredPlayer) {
+				if (d.player != hoveredPlayer) {
 					return "lowOpacity"
 				} else {
 					return "dot"
@@ -450,13 +462,12 @@ function relatedDots(hoveredPlayer, tooltip, svg) {
 						.style("text-align", "center");
 			})
 			.on("mouseout", function(d) {
-				console.log("yest");
 				tooltip.transition()
 					.duration(200)
 					.style("opacity", 0);
 				loaded3();
 			});
-	})
+	};
 }
 
 

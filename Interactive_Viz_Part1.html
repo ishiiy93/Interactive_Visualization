@@ -122,27 +122,35 @@
 		opacity: 0;
 	}
 
+	.legend { list-style: none; }
+	.legend li { float: left; margin-right: 10px; }
+	.legend span { border: 1px solid #ccc; float: left; width: 12px; height: 12px; margin: 2px; }
+	/* your colors */
+	.legend .above { background-color: #FF0000; }
+	.legend .average { background-color: #ffffff; }
+	.legend .below { background-color: #0000FF; }   
+
+	svg {
+		padding-left: 500px;
+		padding-right: 500px;
+	}
+
 </style>
 
 <body>
 	<div id="title">
-		<p>Seattle Mariners Hitters</p>
-	</div>
-
-	<div class="tab">
-  		<a href="javascript:void(0)" id="defaultOpen" class="tablinks" onclick="openView(event, 'StrikeZone')">Strike Zone</a>
-  		<a href="javascript:void(0)" id="sprayTab" class="tablinks" onclick="openView(event, 'SprayChart')">Spray Chart</a>
-	</div>
-
-	<div id="StrikeZone" class="tabcontent">
-		<div id="main">
-			<h3>Strike Zone</h3>
-
+		<h1 style="margin-bottom: 25px;">Seattle Mariners Hitters</h1>
+		<p>Data is collected from Baseball Savant for the Seattle Mariners 2015-2016 regular season games</p>
+	</div>	
+			<div id="main">
+			<h3 style="padding-top: 20px;">Strike Zone</h3>
+			<p style="text-align: center;">Select a game situation using the dynamic query to see the player's performance. The strike zone is viewed from the catcher's perspective.</p>
 			<div id="querySection">
 				<h4>Dynamic Query</h4>
 
 				<select id="playerList">
 					<option value="" disabled selected>Select a Player</option>
+					<option value="All">All Players</option>					
 					<option value="Adam Lind">Adam Lind</option>
 					<option value="Ben Gamel">Ben Gamel</option>
 					<option value="Chris Iannetta">Chris Iannetta</option>
@@ -174,21 +182,20 @@
 
 			<div id="legend">
 				<h4>Color Scale</h4>
-				<span id="redBox">Above Team Average</span>
-				<span id="whiteBox">At Team Average</span>
-				<span id="blueBox">Below Team Average</span>
+				<ul class="legend">
+				    <li><span class="above"></span> Above Team Average</li>
+				    <li><span class="average"></span> Average</li>
+				    <li><span class="below"></span> Below Team Average</li>
+				    </br>
+				</ul>
+
 			</div>
 			<div id="description"></div>
 		</div>
-	</div>
-
-	<div id="SprayChart" class="tabcontent">
 		<div id="main2">
-			<h3>Spray Chart</h3>	
-			<p>Click on a point to show other hits from the same player.</p>
+			<h3 style="margin-top: 50px;">Spray Chart</h3>	
+			<p style="text-align: center;">Click on a point to show other hits from the same player. You are able to see outliers and/or patterns to strategies</p>
 		</div>
-  		
-	</div>
 </body>
 	<script src="interViz.js"></script>
 </html>
